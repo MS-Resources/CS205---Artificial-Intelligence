@@ -88,6 +88,8 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
             """
     "*** YOUR CODE HERE ***"
+    #Note: Visit the Nodes first and then pop the stack
+
     #initialization
     stack = util.Stack()
     all_moves = {}
@@ -135,6 +137,51 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    
+    #Initialization
+    queue = util.Queue()
+    all_moves = {}
+    needed_moves = []
+    goal_state = -1
+
+    visited = set()
+    queue.push(problem.getStartState())
+    visited.add(problem.getStartState())
+
+    #Iterative BFS Traversal
+    while not queue.isEmpty():
+        curr_state = queue.pop()
+        # visited.add(curr_state)
+        
+        if problem.isGoalState(curr_state): 
+            goal_state = curr_state
+            break
+
+        successors = problem.getSuccessors(curr_state)
+
+        #state = (loc, direction, cost)
+        for state in successors:
+            loc = state[0]
+
+            if loc not in visited: 
+                visited.add(loc)
+                all_moves[loc] = [curr_state, state[1]]
+                queue.push(loc)
+    
+
+    #Perform Backtracking
+    if goal_state != -1:
+        curr_backtracked_state = goal_state
+
+        while curr_backtracked_state in all_moves.keys():
+            parent, direction = all_moves[curr_backtracked_state]
+            needed_moves.append(direction)
+            curr_backtracked_state = parent 
+
+
+    #return the moves
+    return needed_moves[::-1]
+    
     util.raiseNotDefined()
 
 
