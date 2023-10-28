@@ -88,26 +88,20 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
             """
     "*** YOUR CODE HERE ***"
-    #helper function
-    def get_backtracked_state(curr_state, direction):
-        if direction == 'North': return (curr_state[0], curr_state[1] - 1)
-        if direction == 'South': return (curr_state[0], curr_state[1] + 1)
-        if direction == 'East': return  (curr_state[0] - 1, curr_state[1])
-        if direction == 'West': return  (curr_state[0] + 1, curr_state[1])
-
     #initialization
     stack = util.Stack()
     all_moves = {}
     needed_moves = []
     goal_state = -1
     
-    visited = set([problem.getStartState()])
+    visited = set()
     stack.push(problem.getStartState())  
 
     #Perform DFS traversal and record the moves
     while not stack.isEmpty():
         curr_state = stack.pop()
-
+        visited.add(curr_state)
+        
         if problem.isGoalState(curr_state): 
             goal_state = curr_state
             break
@@ -118,28 +112,23 @@ def depthFirstSearch(problem):
         for state in successors:
             loc = state[0]
 
-            if loc not in visited:
-                visited.add(loc)
-                all_moves[loc] = state[1]
+            if loc not in visited: 
+                all_moves[loc] = [curr_state, state[1]]
                 stack.push(loc)
-    
-
 
     #Get the needed moves from source to goal (i.e perform backtracking to get moves)
     if goal_state != -1:
         curr_backtracked_state = goal_state
 
         while curr_backtracked_state in all_moves.keys():
-            direction = all_moves[curr_backtracked_state]
-            del all_moves[curr_backtracked_state]
-   
+            parent, direction = all_moves[curr_backtracked_state]
             needed_moves.append(direction)
-            curr_backtracked_state = get_backtracked_state(curr_backtracked_state, direction)
+            curr_backtracked_state = parent 
 
 
     #reverse the list to get the actual order
-    return needed_moves[::-1]
-    
+    return needed_moves[::-1] 
+
     util.raiseNotDefined()
 
 
