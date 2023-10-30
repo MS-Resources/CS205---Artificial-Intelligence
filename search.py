@@ -188,7 +188,9 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-
+    #Note: During graph traversals, you may encounter a node again with lower cost path to reach it, instead of checking if children 
+    #nodes are in visited (then updating won't be possible), check if chidren nodes are already added in cost_dict
+    
     #Initialization
     needed_moves = []
     all_moves = {}
@@ -204,20 +206,22 @@ def uniformCostSearch(problem):
         #pop the node with lowest cost or lowest priority
         curr_state = p_queue.pop()
 
-        if problem.isGoalState(curr_state): 
-            goal_state = curr_state
-            break
-
         if curr_state not in visited:
             visited.add(curr_state)
+        
+            if problem.isGoalState(curr_state): 
+                goal_state = curr_state
+                break
 
             successors = problem.getSuccessors(curr_state)
 
             #state = (loc, direction, cost)
             for next_state, direction, cost  in successors:
+                #print(direction)
                 new_cost = cost_dict[curr_state] + cost
 
-                if next_state not in visited or new_cost < cost_dict[next_state]:
+                #check if next_state new_cost is less than the current cost 
+                if next_state not in cost_dict or new_cost < cost_dict[next_state]:
                     all_moves[next_state] = [curr_state, direction]
                     p_queue.update(next_state, new_cost)
                     cost_dict[next_state] = new_cost
@@ -228,6 +232,7 @@ def uniformCostSearch(problem):
         curr_backtracked_state = goal_state
 
         while curr_backtracked_state in all_moves.keys():
+            #print(curr_backtracked_state, direction)
             parent, direction = all_moves[curr_backtracked_state]
             needed_moves.append(direction)
             curr_backtracked_state = parent
