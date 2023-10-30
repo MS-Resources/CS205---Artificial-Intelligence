@@ -188,6 +188,54 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+
+    #Initialization
+    needed_moves = []
+    all_moves = {}
+    p_queue = util.PriorityQueue()
+    visited = set()
+    goal_state = -1
+    p_queue.push(problem.getStartState(), 0)
+    cost_dict = {problem.getStartState() : 0}
+
+
+    #Iterate graph using UCS
+    while not p_queue.isEmpty():
+        #pop the node with lowest cost or lowest priority
+        curr_state = p_queue.pop()
+
+        if problem.isGoalState(curr_state): 
+            goal_state = curr_state
+            break
+
+        if curr_state not in visited:
+            visited.add(curr_state)
+
+            successors = problem.getSuccessors(curr_state)
+
+            #state = (loc, direction, cost)
+            for next_state, direction, cost  in successors:
+                new_cost = cost_dict[curr_state] + cost
+
+                if next_state not in visited or new_cost < cost_dict[next_state]:
+                    all_moves[next_state] = [curr_state, direction]
+                    p_queue.update(next_state, new_cost)
+                    cost_dict[next_state] = new_cost
+        
+
+    #Perform Backtracking
+    if goal_state != -1:
+        curr_backtracked_state = goal_state
+
+        while curr_backtracked_state in all_moves.keys():
+            parent, direction = all_moves[curr_backtracked_state]
+            needed_moves.append(direction)
+            curr_backtracked_state = parent
+    
+
+    #Return the moves
+    return needed_moves[::-1]
+
     util.raiseNotDefined()
 
 
