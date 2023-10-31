@@ -206,25 +206,25 @@ def uniformCostSearch(problem):
         #pop the node with lowest cost or lowest priority
         curr_state = p_queue.pop()
 
+        #if not visited, then mark visited
         if curr_state not in visited:
             visited.add(curr_state)
         
-            if problem.isGoalState(curr_state): 
-                goal_state = curr_state
-                break
+        if problem.isGoalState(curr_state): 
+            goal_state = curr_state
+            break
 
-            successors = problem.getSuccessors(curr_state)
+        successors = problem.getSuccessors(curr_state)
 
-            #state = (loc, direction, cost)
-            for next_state, direction, cost  in successors:
-                #print(direction)
-                new_cost = cost_dict[curr_state] + cost
+        #state = (loc, direction, cost)
+        for next_state, direction, cost  in successors:
+            new_cost = cost_dict[curr_state] + cost
 
-                #check if next_state new_cost is less than the current cost 
-                if next_state not in cost_dict or new_cost < cost_dict[next_state]:
-                    all_moves[next_state] = [curr_state, direction]
-                    p_queue.update(next_state, new_cost)
-                    cost_dict[next_state] = new_cost
+            #check if next_state new_cost is less than the current cost 
+            if next_state not in cost_dict or new_cost < cost_dict[next_state]:
+                all_moves[next_state] = [curr_state, direction]
+                p_queue.update(next_state, new_cost)
+                cost_dict[next_state] = new_cost
         
 
     #Perform Backtracking
@@ -232,7 +232,6 @@ def uniformCostSearch(problem):
         curr_backtracked_state = goal_state
 
         while curr_backtracked_state in all_moves.keys():
-            #print(curr_backtracked_state, direction)
             parent, direction = all_moves[curr_backtracked_state]
             needed_moves.append(direction)
             curr_backtracked_state = parent
@@ -255,6 +254,81 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+
+    #Initialization
+    needed_moves = []
+    all_moves = {}
+    visited = set()
+    goal_state = -1
+    p_queue = util.PriorityQueue()
+    
+    start_state = problem.getStartState()
+    start_state_cost = heuristic(start_state, problem)
+
+    cost_dict = {start_state : [0, start_state_cost]}
+    p_queue.push(start_state, 0 + start_state_cost)
+
+    #Use A* algorithm to iterate through the graph 
+    while not p_queue.isEmpty():
+        #pop the node with lowest cost or lowest priority
+        curr_state = p_queue.pop()
+
+        #if not visited, then mark visited
+        if curr_state not in visited:
+            visited.add(curr_state)
+        
+            if problem.isGoalState(curr_state): 
+                goal_state = curr_state
+                break
+            
+            #keep track of successor that has min cost and its direction
+            min_path_state = None 
+            min_path_direction = ""
+            min_cost = [float("inf"), float("inf")]
+            unexplored_successors = False
+
+            successors = problem.getSuccessors(curr_state)
+            
+            #state = (loc, direction, cost)
+            for next_state, direction, cost  in successors:
+                if next_state in visited:
+                    continue
+                
+                unexplored_successors = True
+                
+                #total cost from start node to current node
+                f_n = cost_dict[curr_state][0] + cost
+
+                #total estimated cost from current node to goal state (according to the heuristic function)
+                g_n = heuristic(next_state, problem)
+                    
+                #total new cost for the current state
+                total_cost = [f_n, g_n]
+
+                if total_cost[0] + total_cost[1] < min_cost[0] + min_cost[1]: 
+                    min_cost = total_cost
+                    min_path_state = next_state
+                min_path_direction = direction
+
+            if unexplored_successors:
+                all_moves[min_path_state] = [curr_state, min_path_direction]
+                p_queue.push(min_path_state, min_cost)
+                cost_dict[min_path_state] = min_cost
+
+
+    #Perform Backtracking 
+    if goal_state != -1:
+        curr_backtracked_state = goal_state
+
+        while curr_backtracked_state in all_moves.keys():
+            parent, direction = all_moves[curr_backtracked_state]
+            needed_moves.append(direction)
+            curr_backtracked_state = parent
+    
+
+    #Return the moves
+    return needed_moves[::-1]
+
     util.raiseNotDefined()
 
 
