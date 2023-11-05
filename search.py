@@ -265,8 +265,8 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     start_state = problem.getStartState()
     start_state_cost = heuristic(start_state, problem)
 
-    cost_dict = {start_state : [0, start_state_cost]}
-    p_queue.push(start_state, 0 + start_state_cost)
+    cost_dict = {start_state : [0, 0]}
+    p_queue.push(start_state, 0)
 
     #Use A* algorithm to iterate through the graph 
     while not p_queue.isEmpty():
@@ -277,43 +277,43 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         if curr_state not in visited:
             visited.add(curr_state)
         
-            if problem.isGoalState(curr_state): 
-                goal_state = curr_state
-                break
+        if problem.isGoalState(curr_state): 
+            goal_state = curr_state
+            break
             
-            #keep track of successor that has min cost and its direction
-            min_path_state = None 
-            min_path_direction = ""
-            min_cost = [float("inf"), float("inf")]
-            unexplored_successors = False
+        #keep track of successor that has min cost and its direction
+        min_path_state = None 
+        min_path_direction = ""
+        min_cost = [float("inf"), float("inf")]
+        unexplored_successors = False
 
-            successors = problem.getSuccessors(curr_state)
+        successors = problem.getSuccessors(curr_state)
+        
+        #state = (loc, direction, cost)
+        for next_state, direction, cost  in successors:
+            if next_state in visited:
+                continue
             
-            #state = (loc, direction, cost)
-            for next_state, direction, cost  in successors:
-                if next_state in visited:
-                    continue
-                
-                unexplored_successors = True
-                
-                #total cost from start node to current node
-                f_n = cost_dict[curr_state][0] + cost
+            unexplored_successors = True
+            
+            #total cost from start node to current node
+            g_n = cost_dict[curr_state][0] + cost
 
-                #total estimated cost from current node to goal state (according to the heuristic function)
-                g_n = heuristic(next_state, problem)
-                    
-                #total new cost for the current state
-                total_cost = [f_n, g_n]
+            #total estimated cost from current node to goal state (according to the heuristic function)
+            h_n = heuristic(next_state, problem)
+                
+            #total new cost for the current state
+            total_cost = [g_n, h_n]
 
-                if total_cost[0] + total_cost[1] < min_cost[0] + min_cost[1]: 
-                    min_cost = total_cost
-                    min_path_state = next_state
+            if total_cost[0] + total_cost[1] < min_cost[0] + min_cost[1]: 
+                min_cost = total_cost
+                min_path_state = next_state
                 min_path_direction = direction
 
-            if unexplored_successors:
-                all_moves[min_path_state] = [curr_state, min_path_direction]
-                p_queue.push(min_path_state, min_cost)
-                cost_dict[min_path_state] = min_cost
+        if unexplored_successors:
+            all_moves[min_path_state] = [curr_state, min_path_direction]
+            p_queue.push(min_path_state, min_cost)
+            cost_dict[min_path_state] = min_cost
 
 
     #Perform Backtracking 
