@@ -145,8 +145,14 @@ def breadthFirstSearch(problem):
     goal_state = -1
 
     visited = set()
-    queue.push(problem.getStartState())
-    visited.add(problem.getStartState())
+    start_state = problem.getStartState()
+
+    # if type(start_state[0]) == tuple:
+    #     start_state = start_state[0] 
+    
+    # print(start_state, type(start_state))
+    queue.push(start_state)
+    visited.add(start_state)
 
     #Iterative BFS Traversal
     while not queue.isEmpty():
@@ -159,14 +165,15 @@ def breadthFirstSearch(problem):
 
         successors = problem.getSuccessors(curr_state)
 
-        #state = (loc, direction, cost)
+        #state = (loc, direction, cost) OR
+        #state = (loc, .....)
         for state in successors:
             loc = state[0]
 
             if loc not in visited: 
+                queue.push(loc)
                 visited.add(loc)
                 all_moves[loc] = [curr_state, state[1]]
-                queue.push(loc)
     
 
     #Perform Backtracking
