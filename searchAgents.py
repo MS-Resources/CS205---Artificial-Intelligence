@@ -295,6 +295,9 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        found_corners = ()
+        start_state = (self.startingPosition, found_corners)
+        return start_state
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -302,6 +305,15 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
+        found_corners = state[1]
+
+        # print("found corners", found_corners)
+        # print("self.corners", sorted(self.corners))
+        
+        if len(found_corners) == 4:
+            return True
+        
+        return False
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -316,6 +328,8 @@ class CornersProblem(search.SearchProblem):
         """
 
         successors = []
+        x, y = state[0]
+        starting_found_corners = state[1]
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
@@ -325,6 +339,18 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            d_x, d_y = Actions.directionToVector(action)
+            next_x, next_y = int(x + d_x), int(y + d_y)
+            hits_wall = self.walls[next_x][next_y]
+            if not self.walls[next_x][next_y]:
+                next_position = (next_x, next_y)
+
+                if next_position in self.corners and next_position not in starting_found_corners:
+                    new_found_corners = starting_found_corners + (next_position, )
+                else:
+                    new_found_corners = starting_found_corners
+
+                successors.append(((next_position, new_found_corners), action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -343,6 +369,18 @@ class CornersProblem(search.SearchProblem):
         return len(actions)
 
 
+def get_permutations(arr, start=0):
+    if start == len(arr):
+        return [arr[:]]
+    
+    permutations = []
+    for i in range(start, len(arr)):
+        arr[start], arr[i] = arr[i], arr[start]  # Swap elements
+        permutations.extend(get_permutations(arr, start + 1))
+        arr[start], arr[i] = arr[i], arr[start]  # Swap back to the original order
+    
+    return permutations
+
 def cornersHeuristic(state, problem):
     """
     A heuristic for the CornersProblem that you defined.
@@ -360,7 +398,37 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    if problem.isGoalState(state):
+        return 0
+
+    walls = problem.walls
+    corners = problem.corners
+    found_corners = state[1]
+    position = state[0]
+    not_found_corners = []
+    lowest_score = 999999
+
+    for corner in corners:
+        if corner not in found_corners:
+            not_found_corners.append(corner)
+
+    corners_remaining = len(not_found_corners)
+
+    elements = list(range(corners_remaining))
+    permutations = list(get_permutations(elements))
+
+    for perm in permutations:
+        perm_cost = 0
+        previous_location = position
+        for location in perm:
+            perm_cost = perm_cost + util.manhattanDistance(previous_location, not_found_corners[location])
+            previous_location = not_found_corners[location]
+
+        if perm_cost < lowest_score:
+            lowest_score = perm_cost
+
+    return lowest_score
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"

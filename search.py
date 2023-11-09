@@ -145,8 +145,14 @@ def breadthFirstSearch(problem):
     goal_state = -1
 
     visited = set()
-    queue.push(problem.getStartState())
-    visited.add(problem.getStartState())
+    start_state = problem.getStartState()
+
+    # if type(start_state[0]) == tuple:
+    #     start_state = start_state[0] 
+    
+    # print(start_state, type(start_state))
+    queue.push(start_state)
+    visited.add(start_state)
 
     #Iterative BFS Traversal
     while not queue.isEmpty():
@@ -159,14 +165,15 @@ def breadthFirstSearch(problem):
 
         successors = problem.getSuccessors(curr_state)
 
-        #state = (loc, direction, cost)
+        #state = (loc, direction, cost) OR
+        #state = (loc, .....)
         for state in successors:
             loc = state[0]
 
             if loc not in visited: 
+                queue.push(loc)
                 visited.add(loc)
                 all_moves[loc] = [curr_state, state[1]]
-                queue.push(loc)
     
 
     #Perform Backtracking
@@ -254,81 +261,30 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    current_path = []
+    visited = []
+    pq = util.PriorityQueue()
 
-    #Initialization
-    needed_moves = []
-    all_moves = {}
-    visited = set()
-    goal_state = -1
-    p_queue = util.PriorityQueue()
-    
-    start_state = problem.getStartState()
-    start_state_cost = heuristic(start_state, problem)
+    pq.push((problem.getStartState(), current_path), 0)
 
-    cost_dict = {start_state : [0, 0]}
-    p_queue.push(start_state, 0)
+    while not pq.isEmpty():
+        current, current_path = pq.pop()
 
-    #Use A* algorithm to iterate through the graph 
-    while not p_queue.isEmpty():
-        #pop the node with lowest cost or lowest priority
-        curr_state = p_queue.pop()
+        if problem.isGoalState(current):
+            return current_path
 
-        #if not visited, then mark visited
-        if curr_state not in visited:
-            visited.add(curr_state)
-        
-        if problem.isGoalState(curr_state): 
-            goal_state = curr_state
-            break
-            
-        #keep track of successor that has min cost and its direction
-        min_path_state = None 
-        min_path_direction = ""
-        min_cost = [float("inf"), float("inf")]
-        unexplored_successors = False
+        if current not in visited:
+            visited.append(current)
+            successors = problem.getSuccessors(current)
 
-        successors = problem.getSuccessors(curr_state)
-        
-        #state = (loc, direction, cost)
-        for next_state, direction, cost  in successors:
-            if next_state in visited:
-                continue
-            
-            unexplored_successors = True
-            
-            #total cost from start node to current node
-            g_n = cost_dict[curr_state][0] + cost
-
-            #total estimated cost from current node to goal state (according to the heuristic function)
-            h_n = heuristic(next_state, problem)
-                
-            #total new cost for the current state
-            total_cost = [g_n, h_n]
-
-            if total_cost[0] + total_cost[1] < min_cost[0] + min_cost[1]: 
-                min_cost = total_cost
-                min_path_state = next_state
-                min_path_direction = direction
-
-        if unexplored_successors:
-            all_moves[min_path_state] = [curr_state, min_path_direction]
-            p_queue.push(min_path_state, min_cost)
-            cost_dict[min_path_state] = min_cost
-
-
-    #Perform Backtracking 
-    if goal_state != -1:
-        curr_backtracked_state = goal_state
-
-        while curr_backtracked_state in all_moves.keys():
-            parent, direction = all_moves[curr_backtracked_state]
-            needed_moves.append(direction)
-            curr_backtracked_state = parent
-    
-
-    #Return the moves
-    return needed_moves[::-1]
-
+            for successor in successors:
+                successor_p = successor[0]
+                if successor_p not in visited:
+                    successor_direction = successor[1]
+                    successor_path = current_path + [successor_direction]
+                    successor_cost = problem.getCostOfActions(successor_path) + heuristic(successor_p, problem)
+                    pq.push((successor_p, successor_path), successor_cost)
+    return []
     util.raiseNotDefined()
 
 
