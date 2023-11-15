@@ -520,9 +520,23 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+    if problem.isGoalState(state):
+        return 0
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    game_state = problem.startingGameState
+    feast = foodGrid.asList()
+    nearest_bite_position = feast[0]
+    nearest_bite_distance = util.manhattanDistance(position, nearest_bite_position)
+
+    for bite in feast:
+        bite_distance = util.manhattanDistance(position, bite)
+        if nearest_bite_distance > bite_distance:
+            nearest_bite_position = bite
+            nearest_bite_distance = bite_distance
+
+    maze_distance = mazeDistance(nearest_bite_position, position, game_state)
+    return maze_distance
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
